@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <title>What Veera Likes</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -192,7 +192,16 @@
       align-items: start;
     }
 
-    .game-panel { overflow: auto; max-width: 100%; }
+    .game-panel { overflow: auto; max-width: 100%; -webkit-overflow-scrolling: touch; }
+
+    .mobile-help {
+      display: none;
+      color: var(--cyan);
+      font-size: 9px;
+      line-height: 1.7;
+      text-align: center;
+      margin: 0 auto 12px;
+    }
 
     .hud {
       display: grid;
@@ -267,6 +276,7 @@
       border: 5px solid var(--cyan);
       box-shadow: 8px 8px 0 var(--shadow);
       touch-action: manipulation;
+      max-width: max-content;
     }
 
     .clue {
@@ -313,6 +323,7 @@
       font-size: calc(var(--cell-size) * 0.48);
       position: relative;
       transition: background 120ms ease, transform 80ms ease;
+      -webkit-tap-highlight-color: transparent;
     }
 
     .cell:nth-child(5n) { box-shadow: inset -2px 0 rgba(0,0,0,0.25); }
@@ -366,17 +377,69 @@
     .hidden { display: none !important; }
 
     @media (max-width: 980px) {
-      .game-layout { grid-template-columns: 1fr; }
-      .hud { position: static; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); }
+      .app { width: min(100% - 16px, 1180px); padding-top: 10px; }
+      .game-layout { grid-template-columns: 1fr; gap: 12px; }
+      .game-layout > div:first-child { display: none; }
+      .game-panel { order: 1; padding: 10px; margin: 10px auto; width: 100%; }
+      .hud {
+        order: 2;
+        position: static;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 8px;
+        padding: 12px;
+      }
+      .hud .message { grid-column: 1 / -1; }
+      .hud .btn { min-height: 44px; padding: 8px; }
+      .mobile-help { display: block; }
+      .nonogram { margin: 0; }
     }
 
     @media (max-width: 620px) {
-      .topbar { align-items: flex-start; flex-direction: column; }
-      .top-actions { justify-content: flex-start; }
-      .nonogram { transform-origin: top left; }
+      .app { width: 100%; padding: 8px 8px 24px; }
+      .topbar {
+        align-items: stretch;
+        flex-direction: column;
+        gap: 10px;
+        padding: 10px;
+        margin-bottom: 10px;
+        border-width: 3px;
+      }
+      .brand { font-size: 15px; }
+      .player-chip { text-align: left; }
+      .top-actions { justify-content: flex-start; gap: 6px; }
+      .btn { min-height: 42px; padding: 8px 10px; font-size: 9px; box-shadow: 3px 3px 0 var(--shadow); }
+      .btn.small { min-height: 34px; font-size: 8px; }
+      .card { padding: 14px 10px; margin: 10px auto; border-width: 3px; box-shadow: 4px 4px 0 var(--shadow); }
+      .menu-grid { grid-template-columns: 1fr; gap: 10px; }
+      .choice { min-height: 96px; padding: 14px 8px; }
       .results-grid { grid-template-columns: 1fr; }
-      .leader-table { font-size: 7px; }
+      .leader-table { min-width: 620px; font-size: 7px; }
       .leader-table th, .leader-table td { padding: 8px 4px; }
+      #leaderboardMount { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+      .stat { padding: 9px; font-size: 8px; }
+      .hud { grid-template-columns: 1fr 1fr; }
+      .nonogram {
+        transform-origin: top left;
+        --row-clue-width: 86px;
+        --col-clue-height: 96px;
+      }
+      .nonogram.size-5 { --cell-size: min(13vw, 48px); --row-clue-width: 78px; --col-clue-height: 84px; }
+      .nonogram.size-10 { --cell-size: 30px; --row-clue-width: 92px; --col-clue-height: 104px; }
+      .nonogram.size-15 { --cell-size: 24px; --row-clue-width: 102px; --col-clue-height: 118px; }
+      .nonogram.size-20 { --cell-size: 22px; --row-clue-width: 112px; --col-clue-height: 128px; }
+      .grid { border-width: 3px; box-shadow: 4px 4px 0 var(--shadow); }
+      .cell { border-width: 1px; }
+      .clue { font-size: 7px; }
+      .row-clue { gap: 3px; padding-right: 5px; }
+      .col-clue { gap: 3px; padding-bottom: 5px; }
+      .corner { border-width: 3px; font-size: 14px; }
+    }
+
+    @media (max-width: 380px) {
+      .hud { grid-template-columns: 1fr; }
+      .nonogram.size-10 { --cell-size: 28px; }
+      .nonogram.size-15 { --cell-size: 22px; }
+      .nonogram.size-20 { --cell-size: 20px; }
     }
   </style>
 </head>
@@ -418,6 +481,7 @@
         <div class="game-layout">
           <div></div>
           <div class="card game-panel">
+            <div class="mobile-help">Tip: tap to fill, long-press to mark ×. Large puzzles scroll sideways.</div>
             <div id="nonogram" class="nonogram"></div>
           </div>
           <aside class="card hud">
@@ -541,6 +605,13 @@
       completedCols: new Set(),
       muted: false,
       audioCtx: null,
+      music: {
+        playing: false,
+        nextNoteTime: 0,
+        noteIndex: 0,
+        timerId: null,
+        gain: null
+      },
       previousScreen: "menuScreen"
     };
 
@@ -631,6 +702,7 @@
     }
 
     function selectDifficulty(difficulty) {
+      playUiAction(playMenuMove);
       state.difficulty = difficulty;
       [...els.difficultyChoices.children].forEach(child => child.classList.toggle("selected", child.textContent.includes(difficulty)));
       els.puzzleTitle.classList.remove("hidden");
@@ -651,6 +723,7 @@
     }
 
     function startPuzzle(puzzle) {
+      playUiAction(playStartSound);
       state.puzzle = puzzle;
       state.board = parseGrid(puzzle.grid).map(row => row.map(() => 0));
       state.hintsUsed = 0;
@@ -728,14 +801,42 @@
           cell.dataset.row = r;
           cell.dataset.col = c;
           cell.setAttribute("aria-label", `Row ${r + 1}, Column ${c + 1}`);
-          cell.addEventListener("click", event => handleCellClick(event, r, c, "fill"));
-          cell.addEventListener("contextmenu", event => handleCellClick(event, r, c, "mark"));
+          attachCellHandlers(cell, r, c);
           grid.appendChild(cell);
         });
       });
       els.nonogram.appendChild(grid);
       refreshBoardClasses();
       updateCompletedLines(false);
+    }
+
+    function attachCellHandlers(cell, row, col) {
+      let longPressTimer = null;
+      let longPressTriggered = false;
+
+      cell.addEventListener("pointerdown", event => {
+        if (event.pointerType === "mouse") return;
+        longPressTriggered = false;
+        longPressTimer = setTimeout(() => {
+          longPressTriggered = true;
+          handleCellClick(event, row, col, "mark");
+        }, 420);
+      });
+
+      ["pointerup", "pointercancel", "pointerleave"].forEach(type => {
+        cell.addEventListener(type, () => clearTimeout(longPressTimer));
+      });
+
+      cell.addEventListener("click", event => {
+        if (longPressTriggered) {
+          event.preventDefault();
+          longPressTriggered = false;
+          return;
+        }
+        handleCellClick(event, row, col, "fill");
+      });
+
+      cell.addEventListener("contextmenu", event => handleCellClick(event, row, col, "mark"));
     }
 
     function handleCellClick(event, row, col, action) {
@@ -818,11 +919,13 @@
         }
       });
       if (errors > 0) {
+        playErrorBuzz();
         state.wrongChecks += 1;
         els.gameMessage.textContent = `${errors} error${errors === 1 ? "" : "s"}! -50 pts`;
         updateHud();
         setTimeout(() => refreshBoardClasses(), 1000);
       } else {
+        playLineChime();
         els.gameMessage.textContent = "No contradictions found!";
       }
     }
@@ -1048,8 +1151,115 @@
       });
     }
 
+    function playMenuMove() {
+      if (state.muted) return;
+      const ctx = getAudioCtx();
+      tone(523.25, ctx.currentTime, 0.06, 0.03);
+      tone(784.00, ctx.currentTime + 0.055, 0.06, 0.025);
+    }
+
+    function playStartSound() {
+      if (state.muted) return;
+      const ctx = getAudioCtx();
+      [392.00, 523.25, 659.25].forEach((freq, i) => tone(freq, ctx.currentTime + i * 0.08, 0.08, 0.045));
+    }
+
+    function playErrorBuzz() {
+      if (state.muted) return;
+      const ctx = getAudioCtx();
+      tone(110, ctx.currentTime, 0.12, 0.055);
+      tone(82.41, ctx.currentTime + 0.08, 0.15, 0.045);
+    }
+
+    function playHintSound() {
+      if (state.muted) return;
+      const ctx = getAudioCtx();
+      [880, 1174.66, 1567.98].forEach((freq, i) => tone(freq, ctx.currentTime + i * 0.055, 0.07, 0.035));
+    }
+
+    function playResetSound() {
+      if (state.muted) return;
+      const ctx = getAudioCtx();
+      [392, 329.63, 261.63].forEach((freq, i) => tone(freq, ctx.currentTime + i * 0.06, 0.08, 0.04));
+    }
+
+    function playLeaderboardSound() {
+      if (state.muted) return;
+      const ctx = getAudioCtx();
+      [659.25, 783.99, 987.77].forEach((freq, i) => tone(freq, ctx.currentTime + i * 0.07, 0.09, 0.04));
+    }
+
+    function ensureMusicGain() {
+      const ctx = getAudioCtx();
+      if (!state.music.gain) {
+        state.music.gain = ctx.createGain();
+        state.music.gain.gain.value = 0.018;
+        state.music.gain.connect(ctx.destination);
+      }
+      return state.music.gain;
+    }
+
+    function scheduleMusicNote(freq, start, duration) {
+      if (state.muted) return;
+      const ctx = getAudioCtx();
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = "square";
+      osc.frequency.setValueAtTime(freq, start);
+      gain.gain.setValueAtTime(0.0001, start);
+      gain.gain.linearRampToValueAtTime(0.55, start + 0.01);
+      gain.gain.exponentialRampToValueAtTime(0.0001, start + duration);
+      osc.connect(gain).connect(ensureMusicGain());
+      osc.start(start);
+      osc.stop(start + duration + 0.03);
+    }
+
+    function scheduleMusic() {
+      if (!state.music.playing || state.muted) return;
+      const ctx = getAudioCtx();
+      const melody = [261.63, 329.63, 392.00, 523.25, 392.00, 329.63, 293.66, 392.00, 349.23, 440.00, 523.25, 659.25, 523.25, 440.00, 392.00, 329.63];
+      const bass = [130.81, 130.81, 196.00, 196.00, 146.83, 146.83, 196.00, 196.00];
+      while (state.music.nextNoteTime < ctx.currentTime + 0.6) {
+        const beat = state.music.noteIndex;
+        scheduleMusicNote(melody[beat % melody.length], state.music.nextNoteTime, 0.16);
+        if (beat % 2 === 0) scheduleMusicNote(bass[Math.floor(beat / 2) % bass.length], state.music.nextNoteTime, 0.24);
+        state.music.nextNoteTime += 0.22;
+        state.music.noteIndex += 1;
+      }
+    }
+
+    function startBackgroundMusic() {
+      if (state.muted || state.music.playing) return;
+      const ctx = getAudioCtx();
+      state.music.playing = true;
+      state.music.nextNoteTime = ctx.currentTime + 0.05;
+      state.music.noteIndex = 0;
+      scheduleMusic();
+      state.music.timerId = setInterval(scheduleMusic, 120);
+    }
+
+    function stopBackgroundMusic() {
+      state.music.playing = false;
+      clearInterval(state.music.timerId);
+      state.music.timerId = null;
+    }
+
+    function playUiAction(callback) {
+      if (!state.muted) {
+        getAudioCtx();
+        if (!state.music.playing) startBackgroundMusic();
+        callback?.();
+      }
+    }
+
     function toggleMute() {
       state.muted = !state.muted;
+      if (state.muted) {
+        stopBackgroundMusic();
+      } else {
+        startBackgroundMusic();
+        playStartSound();
+      }
       els.muteBtn.textContent = `Sound: ${state.muted ? "Off" : "On"}`;
       els.muteBtn.setAttribute("aria-pressed", String(state.muted));
     }
@@ -1059,29 +1269,32 @@
       const name = els.playerNameInput.value.trim().slice(0, 16);
       if (!name) return;
       state.playerName = name;
+      playUiAction(playStartSound);
       updatePlayerChip();
       renderDifficultyChoices();
       showScreen("menuScreen");
     });
 
-    els.checkBtn.addEventListener("click", checkPuzzle);
-    els.hintBtn.addEventListener("click", useHint);
-    els.resetBtn.addEventListener("click", resetPuzzle);
-    els.finishBtn.addEventListener("click", finishAndSavePuzzle);
-    els.revealBtn.addEventListener("click", revealAndForfeitPuzzle);
-    els.newGameBtn.addEventListener("click", goToMainScreen);
-    els.mainScreenBtn.addEventListener("click", goToMainScreen);
-    els.playAgainBtn.addEventListener("click", goToMainScreen);
-    els.viewLeaderFromResultsBtn.addEventListener("click", () => { state.previousScreen = "resultsScreen"; renderLeaderboard(); showScreen("leaderboardScreen"); });
-    els.leaderFilter.addEventListener("change", renderLeaderboard);
-    els.backFromLeaderBtn.addEventListener("click", () => showScreen(state.playerName ? state.previousScreen : "welcomeScreen"));
+    els.checkBtn.addEventListener("click", () => { playUiAction(playMenuMove); checkPuzzle(); });
+    els.hintBtn.addEventListener("click", () => { playUiAction(playHintSound); useHint(); });
+    els.resetBtn.addEventListener("click", () => { playUiAction(playResetSound); resetPuzzle(); });
+    els.finishBtn.addEventListener("click", () => { playUiAction(playMenuMove); finishAndSavePuzzle(); });
+    els.revealBtn.addEventListener("click", () => { playUiAction(playResetSound); revealAndForfeitPuzzle(); });
+    els.newGameBtn.addEventListener("click", () => { playUiAction(playMenuMove); goToMainScreen(); });
+    els.mainScreenBtn.addEventListener("click", () => { playUiAction(playMenuMove); goToMainScreen(); });
+    els.playAgainBtn.addEventListener("click", () => { playUiAction(playStartSound); goToMainScreen(); });
+    els.viewLeaderFromResultsBtn.addEventListener("click", () => { playUiAction(playLeaderboardSound); state.previousScreen = "resultsScreen"; renderLeaderboard(); showScreen("leaderboardScreen"); });
+    els.leaderFilter.addEventListener("change", () => { playUiAction(playMenuMove); renderLeaderboard(); });
+    els.backFromLeaderBtn.addEventListener("click", () => { playUiAction(playMenuMove); showScreen(state.playerName ? state.previousScreen : "welcomeScreen"); });
     els.leaderBtn.addEventListener("click", () => {
+      playUiAction(playLeaderboardSound);
       const active = document.querySelector(".screen.active")?.id || "menuScreen";
       state.previousScreen = active === "leaderboardScreen" ? "menuScreen" : active;
       renderLeaderboard();
       showScreen("leaderboardScreen");
     });
     els.menuBtn.addEventListener("click", () => {
+      playUiAction(playMenuMove);
       if (!state.playerName) showScreen("welcomeScreen");
       else goToMainScreen();
     });

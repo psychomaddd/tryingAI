@@ -1,0 +1,1307 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>What Veera Likes</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #090b1a;
+      --panel: #171b38;
+      --panel-2: #22284d;
+      --ink: #f7f7ff;
+      --muted: #7f8db5;
+      --red: #ff3b52;
+      --yellow: #ffd94a;
+      --green: #4dff88;
+      --cyan: #3be7ff;
+      --purple: #b66cff;
+      --orange: #ff9f2f;
+      --cell: #eef4ff;
+      --cell-border: #080915;
+      --filled: #10131f;
+      --mark: #ff3b52;
+      --wrong: #ff1d37;
+      --shadow: #02030a;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      color: var(--ink);
+      font-family: "Press Start 2P", monospace;
+      background:
+        radial-gradient(circle at 15% 20%, rgba(59, 231, 255, 0.12), transparent 25%),
+        radial-gradient(circle at 85% 10%, rgba(255, 217, 74, 0.13), transparent 24%),
+        linear-gradient(180deg, #070814 0%, #0d1030 62%, #050610 100%);
+      image-rendering: pixelated;
+      overflow-x: hidden;
+    }
+
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      background: repeating-linear-gradient(
+        to bottom,
+        rgba(255, 255, 255, 0.035) 0,
+        rgba(255, 255, 255, 0.035) 1px,
+        transparent 1px,
+        transparent 5px
+      );
+      mix-blend-mode: screen;
+      opacity: 0.3;
+    }
+
+    button, input, select { font: inherit; }
+
+    .app {
+      width: min(1180px, calc(100vw - 24px));
+      margin: 0 auto;
+      padding: 20px 0 36px;
+    }
+
+    .topbar {
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 14px;
+      margin-bottom: 18px;
+      background: rgba(9, 11, 26, 0.92);
+      border: 4px solid var(--cyan);
+      box-shadow: 0 6px 0 var(--shadow), inset 0 0 0 4px rgba(255,255,255,0.05);
+    }
+
+    .brand {
+      color: var(--yellow);
+      text-shadow: 3px 3px 0 var(--red);
+      line-height: 1.4;
+      font-size: clamp(14px, 2.4vw, 22px);
+    }
+
+    .player-chip {
+      color: var(--green);
+      font-size: 10px;
+      line-height: 1.7;
+      text-align: right;
+    }
+
+    .top-actions { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; justify-content: flex-end; }
+
+    .screen { display: none; }
+    .screen.active { display: block; }
+
+    .card {
+      background: var(--panel);
+      border: 4px solid var(--ink);
+      box-shadow: 8px 8px 0 var(--shadow), inset 0 0 0 4px rgba(255,255,255,0.04);
+      padding: clamp(18px, 3vw, 32px);
+      margin: 18px auto;
+    }
+
+    .center-card { max-width: 760px; text-align: center; }
+
+    h1, h2, h3 { margin: 0 0 18px; line-height: 1.5; }
+    h1 { color: var(--yellow); text-shadow: 4px 4px 0 var(--red); font-size: clamp(22px, 5vw, 44px); }
+    h2 { color: var(--cyan); font-size: clamp(16px, 3vw, 26px); }
+    h3 { color: var(--green); font-size: 14px; }
+
+    p { color: #dce4ff; line-height: 1.8; font-size: 12px; }
+
+    .input-row {
+      display: flex;
+      gap: 12px;
+      justify-content: center;
+      flex-wrap: wrap;
+      margin-top: 22px;
+    }
+
+    input, select {
+      min-height: 48px;
+      color: var(--ink);
+      background: #080915;
+      border: 4px solid var(--cyan);
+      padding: 10px 12px;
+      outline: none;
+      box-shadow: inset 4px 4px 0 rgba(255,255,255,0.08);
+    }
+
+    input:focus, select:focus { border-color: var(--yellow); }
+
+    .btn {
+      cursor: pointer;
+      min-height: 46px;
+      color: var(--ink);
+      background: var(--panel-2);
+      border: 4px solid var(--ink);
+      padding: 10px 14px;
+      box-shadow: 5px 5px 0 var(--shadow);
+      text-transform: uppercase;
+      transition: transform 80ms ease, box-shadow 80ms ease, background 120ms ease;
+      line-height: 1.4;
+      font-size: 10px;
+    }
+
+    .btn:hover { background: #30396d; transform: translate(-1px, -1px); box-shadow: 6px 6px 0 var(--shadow); }
+    .btn:active { transform: translate(4px, 4px); box-shadow: 1px 1px 0 var(--shadow); }
+    .btn.primary { background: var(--red); border-color: var(--yellow); }
+    .btn.good { background: #15843c; border-color: var(--green); }
+    .btn.warn { background: #876000; border-color: var(--yellow); }
+    .btn.ghost { background: transparent; border-color: var(--cyan); }
+    .btn.small { min-height: 36px; padding: 7px 9px; font-size: 9px; }
+    .btn:disabled { opacity: 0.45; cursor: not-allowed; transform: none; }
+
+    .menu-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+      gap: 18px;
+      margin: 22px 0;
+    }
+
+    .choice {
+      border: 4px solid var(--muted);
+      background: #10142e;
+      padding: 20px 12px;
+      cursor: pointer;
+      min-height: 130px;
+      display: grid;
+      place-items: center;
+      gap: 12px;
+      box-shadow: 6px 6px 0 var(--shadow);
+    }
+
+    .choice:hover, .choice.selected { border-color: var(--yellow); background: #1b2150; transform: translate(-2px, -2px); }
+    .choice .big { color: var(--yellow); font-size: 28px; text-shadow: 3px 3px 0 var(--red); }
+    .choice .label { color: var(--ink); font-size: 11px; line-height: 1.5; }
+    .choice .sub { color: var(--muted); font-size: 9px; line-height: 1.6; }
+
+    .game-layout {
+      display: grid;
+      grid-template-columns: 1fr minmax(260px, auto) 300px;
+      gap: 20px;
+      align-items: start;
+    }
+
+    .game-panel { overflow: auto; max-width: 100%; -webkit-overflow-scrolling: touch; }
+
+    .mobile-help {
+      display: none;
+      color: var(--cyan);
+      font-size: 9px;
+      line-height: 1.7;
+      text-align: center;
+      margin: 0 auto 12px;
+    }
+
+    .hud {
+      display: grid;
+      gap: 12px;
+      position: sticky;
+      top: 100px;
+    }
+
+    .stat {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 12px;
+      background: #0c0f24;
+      border: 3px solid var(--panel-2);
+      font-size: 10px;
+      line-height: 1.5;
+    }
+
+    .stat strong { color: var(--yellow); }
+
+    .nonogram {
+      display: grid;
+      justify-content: center;
+      align-items: end;
+      gap: 0;
+      margin: 0 auto;
+      --cell-size: 34px;
+      --clue-cell: 28px;
+      --row-clue-width: 128px;
+      --col-clue-height: 128px;
+    }
+
+    .nonogram.size-5 { --cell-size: 52px; --row-clue-width: 112px; --col-clue-height: 112px; }
+    .nonogram.size-10 { --cell-size: 36px; --row-clue-width: 128px; --col-clue-height: 128px; }
+    .nonogram.size-15 { --cell-size: 27px; --row-clue-width: 140px; --col-clue-height: 140px; }
+    .nonogram.size-20 { --cell-size: 22px; --row-clue-width: 160px; --col-clue-height: 160px; }
+
+    .corner {
+      grid-column: 1;
+      grid-row: 1;
+      width: var(--row-clue-width);
+      height: var(--col-clue-height);
+      border: 4px solid var(--cyan);
+      background: repeating-linear-gradient(45deg, #10142e 0 8px, #151a3d 8px 16px);
+      display: grid;
+      place-items: center;
+      color: var(--yellow);
+      font-size: 22px;
+    }
+
+    .col-clues {
+      grid-column: 2;
+      grid-row: 1;
+      display: grid;
+      align-items: end;
+      height: var(--col-clue-height);
+    }
+
+    .row-clues {
+      grid-column: 1;
+      grid-row: 2;
+      display: grid;
+      width: var(--row-clue-width);
+    }
+
+    .grid {
+      grid-column: 2;
+      grid-row: 2;
+      display: grid;
+      background: var(--cell-border);
+      border: 5px solid var(--cyan);
+      box-shadow: 8px 8px 0 var(--shadow);
+      touch-action: manipulation;
+      max-width: max-content;
+    }
+
+    .clue {
+      display: flex;
+      color: var(--ink);
+      font-size: 9px;
+      line-height: 1.3;
+      text-shadow: 2px 2px 0 #000;
+      transition: opacity 180ms ease, color 180ms ease;
+    }
+
+    .clue.done { color: var(--green); opacity: 0.33; }
+
+    .row-clue {
+      height: var(--cell-size);
+      align-items: center;
+      justify-content: flex-end;
+      gap: 6px;
+      padding-right: 10px;
+      border-bottom: 2px solid rgba(255,255,255,0.08);
+    }
+
+    .col-clue {
+      width: var(--cell-size);
+      height: var(--col-clue-height);
+      flex-direction: column;
+      justify-content: flex-end;
+      align-items: center;
+      gap: 6px;
+      padding-bottom: 10px;
+      border-right: 2px solid rgba(255,255,255,0.08);
+    }
+
+    .cell {
+      width: var(--cell-size);
+      height: var(--cell-size);
+      border: 2px solid var(--cell-border);
+      background: var(--cell);
+      display: grid;
+      place-items: center;
+      cursor: pointer;
+      user-select: none;
+      color: var(--mark);
+      font-size: calc(var(--cell-size) * 0.48);
+      position: relative;
+      transition: background 120ms ease, transform 80ms ease;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .cell:nth-child(5n) { box-shadow: inset -2px 0 rgba(0,0,0,0.25); }
+    .cell.filled { background: var(--filled); }
+    .cell.marked::after { content: "×"; color: var(--mark); text-shadow: 2px 2px 0 #fff; }
+    .cell.pulse { animation: pulse 150ms steps(2, end); }
+    .cell.wrong { background: var(--wrong) !important; animation: shake 160ms steps(2, end) 3; }
+    .cell.revealed { background: var(--yellow); }
+
+    .grid.solved .cell.solution-1 { background: var(--art, var(--yellow)); }
+    .grid.solved .cell.solution-0 { background: #dce4ff; }
+    .grid.solved .cell::after { content: none; }
+
+    @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(0.82); } 100% { transform: scale(1); } }
+    @keyframes shake { 0% { transform: translateX(0); } 50% { transform: translateX(3px); } 100% { transform: translateX(-3px); } }
+
+    .message {
+      min-height: 28px;
+      color: var(--yellow);
+      font-size: 10px;
+      line-height: 1.7;
+      text-align: center;
+    }
+
+    .results-grid, .leader-row {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+      text-align: left;
+      margin: 18px 0;
+    }
+
+    .result-item {
+      padding: 14px;
+      background: #0c0f24;
+      border: 3px solid var(--panel-2);
+      font-size: 10px;
+      line-height: 1.7;
+    }
+    .result-item span { display: block; color: var(--muted); margin-bottom: 6px; }
+    .result-item strong { color: var(--yellow); }
+
+    .leader-controls { display: flex; gap: 12px; align-items: center; justify-content: space-between; flex-wrap: wrap; margin-bottom: 18px; }
+    .leader-table { width: 100%; border-collapse: collapse; font-size: 9px; line-height: 1.5; }
+    .leader-table th, .leader-table td { padding: 12px 8px; border: 3px solid #30385f; text-align: left; }
+    .leader-table th { color: var(--yellow); background: #0c0f24; }
+    .leader-table td { background: #151a36; }
+    .leader-table tr.current td { background: #163b35; color: var(--green); border-color: var(--green); }
+    .empty-state { color: var(--muted); font-size: 11px; line-height: 1.8; padding: 24px; }
+
+    .hidden { display: none !important; }
+
+    @media (max-width: 980px) {
+      .app { width: min(100% - 16px, 1180px); padding-top: 10px; }
+      .game-layout { grid-template-columns: 1fr; gap: 12px; }
+      .game-layout > div:first-child { display: none; }
+      .game-panel { order: 1; padding: 10px; margin: 10px auto; width: 100%; }
+      .hud {
+        order: 2;
+        position: static;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 8px;
+        padding: 12px;
+      }
+      .hud .message { grid-column: 1 / -1; }
+      .hud .btn { min-height: 44px; padding: 8px; }
+      .mobile-help { display: block; }
+      .nonogram { margin: 0; }
+    }
+
+    @media (max-width: 620px) {
+      .app { width: 100%; padding: 8px 8px 24px; }
+      .topbar {
+        align-items: stretch;
+        flex-direction: column;
+        gap: 10px;
+        padding: 10px;
+        margin-bottom: 10px;
+        border-width: 3px;
+      }
+      .brand { font-size: 15px; }
+      .player-chip { text-align: left; }
+      .top-actions { justify-content: flex-start; gap: 6px; }
+      .btn { min-height: 42px; padding: 8px 10px; font-size: 9px; box-shadow: 3px 3px 0 var(--shadow); }
+      .btn.small { min-height: 34px; font-size: 8px; }
+      .card { padding: 14px 10px; margin: 10px auto; border-width: 3px; box-shadow: 4px 4px 0 var(--shadow); }
+      .menu-grid { grid-template-columns: 1fr; gap: 10px; }
+      .choice { min-height: 96px; padding: 14px 8px; }
+      .results-grid { grid-template-columns: 1fr; }
+      .leader-table { min-width: 620px; font-size: 7px; }
+      .leader-table th, .leader-table td { padding: 8px 4px; }
+      #leaderboardMount { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+      .stat { padding: 9px; font-size: 8px; }
+      .hud { grid-template-columns: 1fr 1fr; }
+      .nonogram {
+        transform-origin: top left;
+        --row-clue-width: 86px;
+        --col-clue-height: 96px;
+      }
+      .nonogram.size-5 { --cell-size: min(13vw, 48px); --row-clue-width: 78px; --col-clue-height: 84px; }
+      .nonogram.size-10 { --cell-size: 30px; --row-clue-width: 92px; --col-clue-height: 104px; }
+      .nonogram.size-15 { --cell-size: 24px; --row-clue-width: 102px; --col-clue-height: 118px; }
+      .nonogram.size-20 { --cell-size: 22px; --row-clue-width: 112px; --col-clue-height: 128px; }
+      .grid { border-width: 3px; box-shadow: 4px 4px 0 var(--shadow); }
+      .cell { border-width: 1px; }
+      .clue { font-size: 7px; }
+      .row-clue { gap: 3px; padding-right: 5px; }
+      .col-clue { gap: 3px; padding-bottom: 5px; }
+      .corner { border-width: 3px; font-size: 14px; }
+    }
+
+    @media (max-width: 380px) {
+      .hud { grid-template-columns: 1fr; }
+      .nonogram.size-10 { --cell-size: 28px; }
+      .nonogram.size-15 { --cell-size: 22px; }
+      .nonogram.size-20 { --cell-size: 20px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <header class="topbar">
+      <div class="brand">WHAT VEERA<br>LIKES</div>
+      <div class="top-actions">
+        <div class="player-chip" id="playerChip">PLAYER: ---</div>
+        <button class="btn small ghost" id="menuBtn">Menu</button>
+        <button class="btn small ghost" id="leaderBtn">Leaderboard</button>
+        <button class="btn small" id="muteBtn" aria-pressed="false">Sound: On</button>
+      </div>
+    </header>
+
+    <main>
+      <section id="welcomeScreen" class="screen active">
+        <div class="card center-card">
+          <h1>READY?</h1>
+          <h2>Enter Name</h2>
+          <p>Type your arcade tag to start a session. Your score table persists locally, but your active player name only lives until this page is reloaded.</p>
+          <form id="nameForm" class="input-row">
+            <input id="playerNameInput" maxlength="16" autocomplete="off" placeholder="PLAYER 1" aria-label="Player name" required />
+            <button class="btn primary" type="submit">Start</button>
+          </form>
+        </div>
+      </section>
+
+      <section id="menuScreen" class="screen">
+        <div class="card center-card">
+          <h2>Pick Difficulty</h2>
+          <div class="menu-grid" id="difficultyChoices"></div>
+          <h2 id="puzzleTitle" class="hidden">Pick Puzzle</h2>
+          <div class="menu-grid" id="puzzleChoices"></div>
+        </div>
+      </section>
+
+      <section id="gameScreen" class="screen">
+        <div class="game-layout">
+          <div></div>
+          <div class="card game-panel">
+            <div class="mobile-help">Tip: tap to fill, long-press to mark ×. Large puzzles scroll sideways.</div>
+            <div id="nonogram" class="nonogram"></div>
+          </div>
+          <aside class="card hud">
+            <div class="stat"><span>Puzzle</span><strong id="hudPuzzle">---</strong></div>
+            <div class="stat"><span>Difficulty</span><strong id="hudDifficulty">---</strong></div>
+            <div class="stat"><span>Timer</span><strong id="hudTimer">0:00</strong></div>
+            <div class="stat"><span>Hints</span><strong id="hudHints">0 / 3</strong></div>
+            <div class="stat"><span>Wrong Checks</span><strong id="hudChecks">0</strong></div>
+            <button class="btn warn" id="checkBtn">Check</button>
+            <button class="btn good" id="hintBtn">Hint</button>
+            <button class="btn" id="resetBtn">Reset Board</button>
+            <button class="btn primary" id="finishBtn">Finish + Save</button>
+            <button class="btn warn" id="revealBtn">Reveal / Give Up</button>
+            <button class="btn ghost" id="newGameBtn">Abort + New Game</button>
+            <button class="btn ghost" id="mainScreenBtn">Main Screen</button>
+            <div class="message" id="gameMessage"></div>
+          </aside>
+        </div>
+      </section>
+
+      <section id="resultsScreen" class="screen">
+        <div class="card center-card">
+          <h1>PUZZLE CLEAR!</h1>
+          <h2 id="resultsSubtitle">Great work!</h2>
+          <div class="results-grid" id="resultsGrid"></div>
+          <div class="input-row">
+            <button class="btn primary" id="playAgainBtn">Play Again</button>
+            <button class="btn good" id="viewLeaderFromResultsBtn">View Leaderboard</button>
+          </div>
+        </div>
+      </section>
+
+      <section id="leaderboardScreen" class="screen">
+        <div class="card">
+          <div class="leader-controls">
+            <h2>Leaderboard</h2>
+            <div class="input-row" style="margin:0">
+              <select id="leaderFilter" aria-label="Filter leaderboard by difficulty">
+                <option value="All">All</option>
+                <option value="Easy">Easy</option>
+                <option value="Medium">Medium</option>
+                <option value="Hard">Hard</option>
+                <option value="Expert">Expert</option>
+              </select>
+              <button class="btn ghost" id="backFromLeaderBtn">Back</button>
+            </div>
+          </div>
+          <div id="leaderboardMount"></div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script>
+    const PUZZLES = {
+      Easy: {
+        baseScore: 500,
+        icon: "●",
+        puzzles: [
+          { name: "Coin", art: "#ffd94a", grid: ["01110", "11111", "11111", "11111", "01110"] },
+          { name: "Heart", art: "#ff3b52", grid: ["01010", "11111", "11111", "01110", "00100"] },
+          { name: "Star", art: "#ffd94a", grid: ["00100", "01110", "11111", "01010", "10001"] }
+        ]
+      },
+      Medium: {
+        baseScore: 1000,
+        icon: "◆",
+        puzzles: [
+          { name: "Mushroom", art: "#ff3b52", grid: ["0011111100", "0111111110", "1111111111", "1101111011", "1111111111", "0111111110", "0010111000", "0011111100", "0011011100", "0011011100"] },
+          { name: "Ghost", art: "#dce4ff", grid: ["0011111100", "0111111110", "1110110111", "1100110011", "1111111111", "1111111111", "1111111111", "1010101011", "1101010111", "1010101011"] },
+          { name: "Smiley", art: "#ffd94a", grid: ["0011111100", "0100000010", "1001001001", "1001001001", "1000000001", "1010000101", "1001111001", "0100000010", "0011111100", "0000000000"] },
+          { name: "Rocket", art: "#ff9f2f", grid: ["0001100000", "0011110000", "0111111000", "1101101100", "1111111100", "0011110000", "0111111000", "1101101100", "1001100100", "0001100000"] }
+        ]
+      },
+      Hard: {
+        baseScore: 2000,
+        icon: "▲",
+        puzzles: [
+          { name: "Link's Shield", art: "#3be7ff", grid: ["011111111111110", "111111111111111", "111100000001111", "111000000000111", "110000111000011", "110001111100011", "110001111100011", "110000111000011", "110000010000011", "110000000000011", "111000000000111", "111100000001111", "111111001111111", "011111111111110", "001111111111100"] },
+          { name: "Triforce", art: "#ffd94a", grid: ["000000010000000", "000000111000000", "000001111100000", "000011111110000", "000111111111000", "001111111111100", "011111111111110", "000000010000000", "000000111000000", "000001111100000", "000011111110000", "000111111111000", "001111111111100", "011111111111110", "111111111111111"] },
+          { name: "Space Invader", art: "#4dff88", grid: ["000110000011000", "001111000111100", "011111101111110", "110110111011011", "111111111111111", "111011111110111", "111111111111111", "001101111101100", "011000111000110", "110000010000011", "100000111000001", "000001101100000", "000011000110000", "000110000011000", "001100000001100"] }
+        ]
+      },
+      Expert: {
+        baseScore: 3500,
+        icon: "★",
+        puzzles: [
+          { name: "Spider", art: "#b66cff", source: "Inspired by 20×20 high-difficulty themes on nonograms.org", grid: ["00000000000000000000", "00000000111100000000", "00100000111100000100", "00010000111100001000", "00001000111100010000", "00000101111110100000", "01111011111111011110", "00000011111111000000", "00011111111111111000", "01100111111111100110", "00000111111111100000", "00001111111111110000", "00010011111111001000", "00100011111111000100", "01000001111110000010", "00000000111100000000", "00000000000000000000", "00000000000000000000", "00000000000000000000", "00000000000000000000"] },
+          { name: "Ladybug", art: "#ff3b52", source: "Inspired by 20×20 high-difficulty themes on nonograms.org", grid: ["00000010000001000000", "00000101111110100000", "00000000111100000000", "00000011111111000000", "00000111111111100000", "00001111100111110000", "00011100100110011000", "00111100100110011100", "00110011100111100100", "01110011100111100110", "01111111100111111110", "01111100100110011110", "00111100100110011100", "00111111100111111100", "00011001100111001000", "00001001100111000000", "00000111100111100000", "00000001111110000000", "00000000000000000000", "00000000000000000000"] },
+          { name: "Dragon", art: "#ff9f2f", source: "Original expert design", grid: ['00001000000000000000', '10000110000000000001', '01000001100000111110', '00100000011111110110', '00011000111111111110', '00000101111111111000', '00000011111111110000', '00000111111111100000', '00000111111111000000', '00001011111111100000', '00110001111111110000', '01000000111111111000', '10000000011111111100', '00000000111111111000', '00000001111111110100', '00000011111111000010', '00000100000000000010', '00000100000000000010', '00001000000000000001', '00010000000000000000'] },
+          { name: "Castle", art: "#7f8db5", source: "Original expert design", grid: ['00000000000000000000', '00000011111111000000', '00000001111110000000', '01111111111111111110', '00111101111110111100', '00111101111110111100', '00111101111110111100', '00111111111111111100', '00111111111111111100', '00011111111111111000', '00011110000001111000', '00011110000001111000', '00011110111101111000', '00011110111101111000', '00011110111101111000', '00011110111101111000', '00011110111101111000', '00011110111101111000', '00011110111101111000', '00000000000000000000'] },
+          { name: "Skull", art: "#dce4ff", source: "Original expert design", grid: ['00000000000000000000', '00000000000000000000', '00000011111111000000', '00001111111111110000', '00011111111111111000', '00011111111111111000', '00111000111100011100', '00111000111100011100', '00111000111100011100', '00011111111111111000', '00001111100111110000', '00000111100111100000', '00000011100111000000', '00000011111111000000', '00000101011010100000', '00000101011010100000', '00000001011010000000', '00000000000000000000', '00000000000000000000', '00000000000000000000'] },
+          { name: "Anchor", art: "#3be7ff", source: "Original expert design", grid: ['00000000000000000000', '00000000111100000000', '00000000100100000000', '00000000111100000000', '00000000011000000000', '00000000011000000000', '00000111111111100000', '00000000011000000000', '00000000011000000000', '00000000011000000000', '00000000011000000000', '01100000011000000110', '00111100011000111100', '00100000011000001000', '00010000011000001000', '00001111111111110000', '00000000111100000000', '00000000111100000000', '00000000111100000000', '00000000000000000000'] },
+          { name: "Crown", art: "#ffd94a", source: "Original expert design", grid: ['00000000000000000000', '00000000000000000000', '00000000000000000000', '00000000001000000000', '00000100001000010000', '00000100001000010000', '00001010010100101000', '00001010010100101000', '00001010010100101000', '00010001011101001000', '00011111111111111000', '00101110111110111100', '00101110111110111100', '00111111111111111100', '00111111111111111100', '00111111111111111100', '00111111111111111100', '00111111111111111100', '00011111111111111000', '00000000000000000000'] },
+          { name: "Owl", art: "#b66cff", source: "Original expert design", grid: ['00000000000000000000', '00000000000000000000', '00000001111110000000', '00000111111111100000', '00001111111111110000', '00011000111100011000', '00011010111101011000', '00111000111100011100', '00111111100111111100', '00111111100111111100', '00111111100111111100', '00011111111111111000', '00011111111111111000', '00001111111111110000', '00000111111111100000', '00000011111111000000', '00000100000000100000', '00001000000000010000', '00111100000000111100', '00000000000000000000'] },
+          { name: "Turtle", art: "#4dff88", source: "Original expert design", grid: ['00000000000000000000', '00000000000000000000', '00000000000000000000', '00000000000000000000', '00001110000001110000', '00001111111111110000', '00001111111111110000', '00001111111111110111', '00011111000011111101', '00011111000011111111', '00011111000011111000', '00001111111111110000', '00001111111111110000', '00001111111111110000', '00001110000001110000', '00000000000000000000', '00000000000000000000', '00000000000000000000', '00000000000000000000', '00000000000000000000'] },
+          { name: "Seahorse", art: "#3be7ff", source: "Original expert design", grid: ['00000000000000000000', '00000000011111000000', '00001000111111110000', '00010110111111111000', '00100001111111111000', '00000000011111110000', '00000000011111100000', '00000000111111000000', '00000001111110000000', '00000001111100000000', '00000000111110000000', '00000000011111000000', '00000000001111100000', '00000000001111110000', '00000000011111110000', '00000000111111100000', '00000000111111000000', '00000011111000000000', '00000111000100000000', '00000000000010000000'] },
+          { name: "Bat", art: "#10131f", source: "Original expert design", grid: ['00000000000000000000', '00000000000000000000', '00000100000000100000', '00000010000001000000', '00000001000010000000', '00000000111100000000', '00000011011011000000', '00001111111111110000', '00111111111111111100', '11111111111111111111', '11000111111111100011', '11000111111111100011', '11000111111111100011', '11000111111111100011', '00000010000001000000', '00000010000000100000', '00000100000000100000', '00001000000000010000', '00000000000000000000', '00000000000000000000'] },
+          { name: "Key", art: "#ffd94a", source: "Original expert design", grid: ['00000000000000000000', '00000000000000000000', '00000000000000000000', '00111111110000000000', '00111111110000000000', '00110000110000000000', '00110000110000000000', '00110000111111111110', '00110000110000101110', '00111111110000101110', '00111111110001111110', '00000000000001110000', '00000000000001110000', '00000000000000000000', '00000000000000000000', '00000000000000000000', '00000000000000000000', '00000000000000000000', '00000000000000000000', '00000000000000000000'] },
+          { name: "Robot", art: "#7f8db5", source: "Original expert design", grid: ['00000000011000000000', '00000000011000000000', '00000000111100000000', '00001111111111110000', '10001111111111110001', '01001111111111110010', '00111100011000111100', '00001100011000110000', '00001100011000110000', '00001111111111110000', '00001111111111110000', '00001111111111110000', '00001111111111110000', '00001111111111110000', '00001111111111110000', '00000011100111000000', '00000011100111000000', '00000011100111000000', '00000011100111000000', '00000000000000000000'] },
+          { name: "Phoenix", art: "#ff3b52", source: "Original expert design", grid: ['00000000000000000000', '00010000000000101000', '00001000011111010000', '11000110011111100011', '00111001011111011100', '00000110111101100000', '00000001111110000000', '00000000111100000000', '11111111111111111111', '00000000111100000000', '00000000111100000000', '00000000111100000000', '00000000111100000000', '00000000111100000000', '00000001000010000000', '00000010000001000000', '00000100000000100000', '00001000000000010000', '00010000000000001000', '00000000000000000000'] },
+          { name: "Cactus", art: "#4dff88", source: "Original expert design", grid: ['00000000000000000000', '00000000000000000000', '00000000000000000000', '00000000100100000000', '00000000100100000000', '00000000111100000000', '00011100111100000000', '00011100111100000000', '00011111111100111000', '00011111111100111000', '00001111111111111000', '00001111111111111000', '00000000111111110000', '00000000111111110000', '00000000111100000000', '00000000111100000000', '00000000111100000000', '00000000111100000000', '00000111111111100000', '00000000000000000000'] },
+          { name: "Diamond", art: "#3be7ff", source: "Original expert design", grid: ['00000000000000000000', '00000000000000000000', '00000000011000000000', '00000000111100000000', '00000001111110000000', '00000011111111000000', '00000111100111100000', '00001111000011110000', '00011111000011111000', '00111111000011111100', '00111111000011111100', '00011111000011111000', '00001111000011110000', '00000111000011100000', '00000111111111100000', '00000101111110100000', '00001000111100010000', '00001000011000010000', '00000000000000000000', '00000000000000000000'] },
+          { name: "Music", art: "#b66cff", source: "Original expert design", grid: ['00000000000000000000', '00000000000000100000', '00000001111111100000', '00000001000000100000', '00000001111111100000', '00000001000000100000', '00000001000000100000', '00000001000000100000', '00000001000000100000', '00000001000000100000', '00000001000000100000', '00000001001111100000', '00000001001111100000', '00011111001111100000', '00011111001111100000', '00011111001111110000', '00011111000000001110', '00011111000000000000', '01100000000000000000', '00000000000000000000'] }
+        ]
+      }
+    };
+
+    const state = {
+      playerName: "",
+      difficulty: null,
+      puzzle: null,
+      board: [],
+      startedAt: 0,
+      timerId: null,
+      elapsed: 0,
+      hintsUsed: 0,
+      wrongChecks: 0,
+      puzzleComplete: false,
+      completedRows: new Set(),
+      completedCols: new Set(),
+      muted: false,
+      audioCtx: null,
+      music: {
+        playing: false,
+        nextNoteTime: 0,
+        noteIndex: 0,
+        timerId: null,
+        gain: null
+      },
+      previousScreen: "menuScreen"
+    };
+
+    const els = {
+      playerChip: document.getElementById("playerChip"),
+      welcomeScreen: document.getElementById("welcomeScreen"),
+      menuScreen: document.getElementById("menuScreen"),
+      gameScreen: document.getElementById("gameScreen"),
+      resultsScreen: document.getElementById("resultsScreen"),
+      leaderboardScreen: document.getElementById("leaderboardScreen"),
+      nameForm: document.getElementById("nameForm"),
+      playerNameInput: document.getElementById("playerNameInput"),
+      difficultyChoices: document.getElementById("difficultyChoices"),
+      puzzleTitle: document.getElementById("puzzleTitle"),
+      puzzleChoices: document.getElementById("puzzleChoices"),
+      nonogram: document.getElementById("nonogram"),
+      hudPuzzle: document.getElementById("hudPuzzle"),
+      hudDifficulty: document.getElementById("hudDifficulty"),
+      hudTimer: document.getElementById("hudTimer"),
+      hudHints: document.getElementById("hudHints"),
+      hudChecks: document.getElementById("hudChecks"),
+      checkBtn: document.getElementById("checkBtn"),
+      hintBtn: document.getElementById("hintBtn"),
+      resetBtn: document.getElementById("resetBtn"),
+      finishBtn: document.getElementById("finishBtn"),
+      revealBtn: document.getElementById("revealBtn"),
+      newGameBtn: document.getElementById("newGameBtn"),
+      mainScreenBtn: document.getElementById("mainScreenBtn"),
+      gameMessage: document.getElementById("gameMessage"),
+      resultsSubtitle: document.getElementById("resultsSubtitle"),
+      resultsGrid: document.getElementById("resultsGrid"),
+      playAgainBtn: document.getElementById("playAgainBtn"),
+      viewLeaderFromResultsBtn: document.getElementById("viewLeaderFromResultsBtn"),
+      leaderboardMount: document.getElementById("leaderboardMount"),
+      leaderFilter: document.getElementById("leaderFilter"),
+      backFromLeaderBtn: document.getElementById("backFromLeaderBtn"),
+      leaderBtn: document.getElementById("leaderBtn"),
+      menuBtn: document.getElementById("menuBtn"),
+      muteBtn: document.getElementById("muteBtn")
+    };
+
+    function showScreen(id) {
+      document.querySelectorAll(".screen").forEach(screen => screen.classList.remove("active"));
+      document.getElementById(id).classList.add("active");
+    }
+
+    function updatePlayerChip() {
+      els.playerChip.textContent = `PLAYER: ${state.playerName || "---"}`;
+    }
+
+    function formatTime(seconds) {
+      const mins = Math.floor(seconds / 60);
+      const secs = seconds % 60;
+      return `${mins}:${secs.toString().padStart(2, "0")}`;
+    }
+
+    function parseGrid(lines) {
+      return lines.map(row => row.split("").map(Number));
+    }
+
+    function clueForLine(values) {
+      const clues = [];
+      let run = 0;
+      values.forEach(value => {
+        if (value === 1) run += 1;
+        else if (run > 0) { clues.push(run); run = 0; }
+      });
+      if (run > 0) clues.push(run);
+      return clues.length ? clues : [0];
+    }
+
+    function makeClues(grid) {
+      const rows = grid.map(clueForLine);
+      const cols = grid[0].map((_, col) => clueForLine(grid.map(row => row[col])));
+      return { rows, cols };
+    }
+
+    function renderDifficultyChoices() {
+      els.difficultyChoices.innerHTML = "";
+      Object.entries(PUZZLES).forEach(([difficulty, data]) => {
+        const button = document.createElement("button");
+        button.className = "choice";
+        button.type = "button";
+        button.innerHTML = `<span class="big">${data.icon}</span><span class="label">${difficulty}</span><span class="sub">${data.puzzles.length} puzzles / ${data.puzzles[0].grid.length}×${data.puzzles[0].grid.length}</span>`;
+        button.addEventListener("click", () => selectDifficulty(difficulty));
+        els.difficultyChoices.appendChild(button);
+      });
+    }
+
+    function selectDifficulty(difficulty) {
+      playUiAction(playMenuMove);
+      state.difficulty = difficulty;
+      [...els.difficultyChoices.children].forEach(child => child.classList.toggle("selected", child.textContent.includes(difficulty)));
+      els.puzzleTitle.classList.remove("hidden");
+      renderPuzzleChoices();
+    }
+
+    function renderPuzzleChoices() {
+      els.puzzleChoices.innerHTML = "";
+      PUZZLES[state.difficulty].puzzles.forEach(puzzle => {
+        const size = puzzle.grid.length;
+        const button = document.createElement("button");
+        button.className = "choice";
+        button.type = "button";
+        button.innerHTML = `<span class="big" style="color:${puzzle.art}">▣</span><span class="label">${puzzle.name}</span><span class="sub">${size}×${size}</span>`;
+        button.addEventListener("click", () => startPuzzle(puzzle));
+        els.puzzleChoices.appendChild(button);
+      });
+    }
+
+    function startPuzzle(puzzle) {
+      playUiAction(playStartSound);
+      state.puzzle = puzzle;
+      state.board = parseGrid(puzzle.grid).map(row => row.map(() => 0));
+      state.hintsUsed = 0;
+      state.wrongChecks = 0;
+      state.puzzleComplete = false;
+      state.completedRows = new Set();
+      state.completedCols = new Set();
+      state.elapsed = 0;
+      els.gameMessage.textContent = "";
+      renderGame();
+      startTimer();
+      showScreen("gameScreen");
+    }
+
+    function startTimer() {
+      clearInterval(state.timerId);
+      state.startedAt = Date.now();
+      els.hudTimer.textContent = "0:00";
+      state.timerId = setInterval(() => {
+        state.elapsed = Math.floor((Date.now() - state.startedAt) / 1000);
+        els.hudTimer.textContent = formatTime(state.elapsed);
+      }, 1000);
+    }
+
+    function renderGame() {
+      const solution = parseGrid(state.puzzle.grid);
+      const size = solution.length;
+      const clues = makeClues(solution);
+      els.hudPuzzle.textContent = state.puzzle.name;
+      els.hudDifficulty.textContent = state.difficulty;
+      updateHud();
+      els.nonogram.className = `nonogram size-${size}`;
+      els.nonogram.style.gridTemplateColumns = "var(--row-clue-width) auto";
+      els.nonogram.style.gridTemplateRows = "var(--col-clue-height) auto";
+      els.nonogram.innerHTML = "";
+
+      const corner = document.createElement("div");
+      corner.className = "corner";
+      corner.textContent = "?";
+      els.nonogram.appendChild(corner);
+
+      const colClues = document.createElement("div");
+      colClues.className = "col-clues";
+      colClues.style.gridTemplateColumns = `repeat(${size}, var(--cell-size))`;
+      clues.cols.forEach((clue, index) => {
+        const item = document.createElement("div");
+        item.className = "clue col-clue";
+        item.dataset.colClue = index;
+        item.innerHTML = clue.map(n => `<span>${n}</span>`).join("");
+        colClues.appendChild(item);
+      });
+      els.nonogram.appendChild(colClues);
+
+      const rowClues = document.createElement("div");
+      rowClues.className = "row-clues";
+      rowClues.style.gridTemplateRows = `repeat(${size}, var(--cell-size))`;
+      clues.rows.forEach((clue, index) => {
+        const item = document.createElement("div");
+        item.className = "clue row-clue";
+        item.dataset.rowClue = index;
+        item.innerHTML = clue.map(n => `<span>${n}</span>`).join("");
+        rowClues.appendChild(item);
+      });
+      els.nonogram.appendChild(rowClues);
+
+      const grid = document.createElement("div");
+      grid.className = "grid";
+      grid.style.gridTemplateColumns = `repeat(${size}, var(--cell-size))`;
+      grid.style.setProperty("--art", state.puzzle.art);
+      solution.forEach((row, r) => {
+        row.forEach((value, c) => {
+          const cell = document.createElement("button");
+          cell.type = "button";
+          cell.className = `cell solution-${value}`;
+          cell.dataset.row = r;
+          cell.dataset.col = c;
+          cell.setAttribute("aria-label", `Row ${r + 1}, Column ${c + 1}`);
+          attachCellHandlers(cell, r, c);
+          grid.appendChild(cell);
+        });
+      });
+      els.nonogram.appendChild(grid);
+      refreshBoardClasses();
+      updateCompletedLines(false);
+    }
+
+    function attachCellHandlers(cell, row, col) {
+      let longPressTimer = null;
+      let longPressTriggered = false;
+
+      cell.addEventListener("pointerdown", event => {
+        if (event.pointerType === "mouse") return;
+        longPressTriggered = false;
+        longPressTimer = setTimeout(() => {
+          longPressTriggered = true;
+          handleCellClick(event, row, col, "mark");
+        }, 420);
+      });
+
+      ["pointerup", "pointercancel", "pointerleave"].forEach(type => {
+        cell.addEventListener(type, () => clearTimeout(longPressTimer));
+      });
+
+      cell.addEventListener("click", event => {
+        if (longPressTriggered) {
+          event.preventDefault();
+          longPressTriggered = false;
+          return;
+        }
+        handleCellClick(event, row, col, "fill");
+      });
+
+      cell.addEventListener("contextmenu", event => handleCellClick(event, row, col, "mark"));
+    }
+
+    function handleCellClick(event, row, col, action) {
+      event.preventDefault();
+      if (state.puzzleComplete) return;
+      const current = state.board[row][col];
+      if (action === "fill") state.board[row][col] = current === 1 ? 0 : 1;
+      if (action === "mark") state.board[row][col] = current === 2 ? 0 : 2;
+      playClick();
+      refreshBoardClasses(row, col);
+      updateCompletedLines(true);
+      if (isSolved()) completePuzzle();
+    }
+
+    function refreshBoardClasses(pulseRow = -1, pulseCol = -1) {
+      document.querySelectorAll(".cell").forEach(cell => {
+        const row = Number(cell.dataset.row);
+        const col = Number(cell.dataset.col);
+        const value = state.board[row][col];
+        cell.classList.toggle("filled", value === 1);
+        cell.classList.toggle("marked", value === 2);
+        cell.classList.remove("wrong", "revealed", "pulse");
+        if (row === pulseRow && col === pulseCol) {
+          void cell.offsetWidth;
+          cell.classList.add("pulse");
+        }
+      });
+    }
+
+    function lineMatchesRow(rowIndex) {
+      const solution = parseGrid(state.puzzle.grid);
+      return solution[rowIndex].every((value, col) => value === 1 ? state.board[rowIndex][col] === 1 : state.board[rowIndex][col] !== 1);
+    }
+
+    function lineMatchesCol(colIndex) {
+      const solution = parseGrid(state.puzzle.grid);
+      return solution.every((row, r) => row[colIndex] === 1 ? state.board[r][colIndex] === 1 : state.board[r][colIndex] !== 1);
+    }
+
+    function updateCompletedLines(withSound) {
+      const size = state.board.length;
+      let newlyDone = false;
+      for (let r = 0; r < size; r += 1) {
+        const done = lineMatchesRow(r);
+        document.querySelector(`[data-row-clue="${r}"]`)?.classList.toggle("done", done);
+        if (done && !state.completedRows.has(r)) { state.completedRows.add(r); newlyDone = true; }
+        if (!done) state.completedRows.delete(r);
+      }
+      for (let c = 0; c < size; c += 1) {
+        const done = lineMatchesCol(c);
+        document.querySelector(`[data-col-clue="${c}"]`)?.classList.toggle("done", done);
+        if (done && !state.completedCols.has(c)) { state.completedCols.add(c); newlyDone = true; }
+        if (!done) state.completedCols.delete(c);
+      }
+      if (withSound && newlyDone) playLineChime();
+    }
+
+    function isSolved() {
+      const solution = parseGrid(state.puzzle.grid);
+      return solution.every((row, r) => row.every((value, c) => value === 1 ? state.board[r][c] === 1 : state.board[r][c] !== 1));
+    }
+
+    function updateHud() {
+      els.hudHints.textContent = `${state.hintsUsed} / 3`;
+      els.hudChecks.textContent = String(state.wrongChecks);
+      els.hintBtn.disabled = state.hintsUsed >= 3;
+    }
+
+    function checkPuzzle() {
+      if (state.puzzleComplete) return;
+      const solution = parseGrid(state.puzzle.grid);
+      let errors = 0;
+      document.querySelectorAll(".cell").forEach(cell => {
+        const r = Number(cell.dataset.row);
+        const c = Number(cell.dataset.col);
+        const hasError = (state.board[r][c] === 1 && solution[r][c] === 0) || (state.board[r][c] === 2 && solution[r][c] === 1);
+        if (hasError) {
+          errors += 1;
+          cell.classList.add("wrong");
+        }
+      });
+      if (errors > 0) {
+        playErrorBuzz();
+        state.wrongChecks += 1;
+        els.gameMessage.textContent = `${errors} error${errors === 1 ? "" : "s"}! -50 pts`;
+        updateHud();
+        setTimeout(() => refreshBoardClasses(), 1000);
+      } else {
+        playLineChime();
+        els.gameMessage.textContent = "No contradictions found!";
+      }
+    }
+
+    function useHint() {
+      if (state.puzzleComplete || state.hintsUsed >= 3) return;
+      const solution = parseGrid(state.puzzle.grid);
+      const candidates = [];
+      solution.forEach((row, r) => row.forEach((value, c) => {
+        if (value === 1 && state.board[r][c] !== 1) candidates.push([r, c]);
+      }));
+      if (!candidates.length) return;
+      const [r, c] = candidates[Math.floor(Math.random() * candidates.length)];
+      state.board[r][c] = 1;
+      state.hintsUsed += 1;
+      refreshBoardClasses(r, c);
+      document.querySelector(`.cell[data-row="${r}"][data-col="${c}"]`)?.classList.add("revealed");
+      els.gameMessage.textContent = "Hint revealed! -100 pts";
+      updateHud();
+      updateCompletedLines(true);
+      if (isSolved()) completePuzzle();
+    }
+
+    function resetPuzzle() {
+      if (!state.puzzle) return;
+      state.puzzleComplete = false;
+      state.board = parseGrid(state.puzzle.grid).map(row => row.map(() => 0));
+      state.hintsUsed = 0;
+      state.wrongChecks = 0;
+      state.completedRows = new Set();
+      state.completedCols = new Set();
+      els.gameMessage.textContent = "Board reset.";
+      refreshBoardClasses();
+      updateHud();
+      updateCompletedLines(false);
+    }
+
+    function abortCurrentPuzzle() {
+      clearInterval(state.timerId);
+      state.puzzleComplete = true;
+      state.puzzle = null;
+      state.board = [];
+      state.elapsed = 0;
+      els.hudTimer.textContent = "0:00";
+      els.gameMessage.textContent = "";
+    }
+
+    function goToMainScreen() {
+      abortCurrentPuzzle();
+      state.difficulty = null;
+      els.puzzleChoices.innerHTML = "";
+      els.puzzleTitle.classList.add("hidden");
+      [...els.difficultyChoices.children].forEach(child => child.classList.remove("selected"));
+      showScreen("menuScreen");
+    }
+
+    function finishAndSavePuzzle() {
+      if (!state.puzzle || state.puzzleComplete) return;
+      if (isSolved()) {
+        completePuzzle();
+        return;
+      }
+      checkPuzzle();
+      els.gameMessage.textContent = "Not solved yet — finish all filled cells before saving.";
+    }
+
+    function revealAndForfeitPuzzle() {
+      if (!state.puzzle || state.puzzleComplete) return;
+      state.puzzleComplete = true;
+      clearInterval(state.timerId);
+      state.elapsed = Math.floor((Date.now() - state.startedAt) / 1000);
+      const solution = parseGrid(state.puzzle.grid);
+      state.board = solution.map(row => row.map(value => value === 1 ? 1 : 0));
+      refreshBoardClasses();
+      updateCompletedLines(false);
+      document.querySelector(".grid")?.classList.add("solved");
+      els.gameMessage.textContent = "Puzzle revealed. Score not saved.";
+      playLineChime();
+      const score = { ...calculateScore(), final: 0, forfeited: true };
+      setTimeout(() => showResults(score, false), 700);
+    }
+
+    function calculateScore() {
+      const base = PUZZLES[state.difficulty].baseScore;
+      const timePenalty = state.elapsed;
+      const hintPenalty = state.hintsUsed * 100;
+      const checkPenalty = state.wrongChecks * 50;
+      return {
+        base,
+        timePenalty,
+        hintPenalty,
+        checkPenalty,
+        final: Math.max(0, base - timePenalty - hintPenalty - checkPenalty)
+      };
+    }
+
+    function completePuzzle() {
+      if (state.puzzleComplete) return;
+      state.puzzleComplete = true;
+      clearInterval(state.timerId);
+      state.elapsed = Math.floor((Date.now() - state.startedAt) / 1000);
+      document.querySelector(".grid")?.classList.add("solved");
+      playSolvedFanfare();
+      const score = calculateScore();
+      saveScore(score.final);
+      setTimeout(() => showResults(score), 900);
+    }
+
+    function showResults(score, saved = true) {
+      const verb = score.forfeited ? "revealed" : "solved";
+      els.resultsSubtitle.textContent = `${state.playerName} ${verb} ${state.puzzle.name}`;
+      const rows = [
+        ["Player", state.playerName],
+        ["Puzzle", `${state.puzzle.name} (${state.difficulty})`],
+        ["Time", formatTime(state.elapsed)],
+        ["Base Score", `${score.base} pts`],
+        ["Hints Used", `${state.hintsUsed} (-${score.hintPenalty})`],
+        ["Wrong Checks", `${state.wrongChecks} (-${score.checkPenalty})`],
+        ["Time Bonus", `-${score.timePenalty}`],
+        ["Status", saved ? "Saved to leaderboard" : "Revealed / not saved"],
+        ["Final Score", `${score.final} pts`]
+      ];
+      els.resultsGrid.innerHTML = rows.map(([label, value]) => `<div class="result-item"><span>${label}</span><strong>${value}</strong></div>`).join("");
+      showScreen("resultsScreen");
+    }
+
+    function leaderboard() {
+      try { return JSON.parse(localStorage.getItem("nonogramLeaderboard") || "[]"); }
+      catch { return []; }
+    }
+
+    function saveScore(score) {
+      const scores = leaderboard();
+      scores.push({
+        player: state.playerName,
+        puzzle: state.puzzle.name,
+        difficulty: state.difficulty,
+        score,
+        time: state.elapsed,
+        date: new Date().toISOString()
+      });
+      scores.sort((a, b) => b.score - a.score || a.time - b.time);
+      localStorage.setItem("nonogramLeaderboard", JSON.stringify(scores.slice(0, 100)));
+    }
+
+    function renderLeaderboard() {
+      const filter = els.leaderFilter.value;
+      const scores = leaderboard()
+        .filter(entry => filter === "All" || entry.difficulty === filter)
+        .sort((a, b) => b.score - a.score || a.time - b.time)
+        .slice(0, 20);
+      if (!scores.length) {
+        els.leaderboardMount.innerHTML = `<div class="empty-state">No scores yet. Clear a puzzle to claim the board!</div>`;
+        return;
+      }
+      const rows = scores.map((entry, index) => `
+        <tr class="${entry.player === state.playerName ? "current" : ""}">
+          <td>#${index + 1}</td>
+          <td>${escapeHtml(entry.player)}</td>
+          <td>${escapeHtml(entry.puzzle)}</td>
+          <td>${entry.difficulty}</td>
+          <td>${entry.score}</td>
+          <td>${formatTime(entry.time)}</td>
+        </tr>`).join("");
+      els.leaderboardMount.innerHTML = `
+        <table class="leader-table">
+          <thead><tr><th>Rank</th><th>Player</th><th>Puzzle</th><th>Diff</th><th>Score</th><th>Time</th></tr></thead>
+          <tbody>${rows}</tbody>
+        </table>`;
+    }
+
+    function escapeHtml(value) {
+      return String(value).replace(/[&<>'"]/g, char => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", "'": "&#39;", '"': "&quot;" }[char]));
+    }
+
+    function getAudioCtx() {
+      if (!state.audioCtx) state.audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      if (state.audioCtx.state === "suspended") state.audioCtx.resume();
+      return state.audioCtx;
+    }
+
+    function tone(freq, start, duration, gainValue = 0.06, destination) {
+      if (state.muted) return;
+      const ctx = getAudioCtx();
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = "sine";
+      osc.frequency.setValueAtTime(freq, start);
+      gain.gain.setValueAtTime(0.0001, start);
+      gain.gain.exponentialRampToValueAtTime(gainValue, start + 0.015);
+      gain.gain.exponentialRampToValueAtTime(0.0001, start + duration);
+      osc.connect(gain).connect(destination || ctx.destination);
+      osc.start(start);
+      osc.stop(start + duration + 0.02);
+    }
+
+    function playClick() {
+      if (state.muted) return;
+      const ctx = getAudioCtx();
+      tone(660, ctx.currentTime, 0.05, 0.035);
+    }
+
+    function playLineChime() {
+      if (state.muted) return;
+      const ctx = getAudioCtx();
+      tone(261.63, ctx.currentTime, 0.15, 0.05);
+      tone(329.63, ctx.currentTime + 0.15, 0.15, 0.05);
+    }
+
+    function playSolvedFanfare() {
+      if (state.muted) return;
+      const ctx = getAudioCtx();
+      const delay = ctx.createDelay();
+      const feedback = ctx.createGain();
+      delay.delayTime.value = 0.16;
+      feedback.gain.value = 0.22;
+      delay.connect(feedback).connect(delay);
+      delay.connect(ctx.destination);
+      [261.63, 329.63, 392.00, 523.25].forEach((freq, i) => {
+        const start = ctx.currentTime + i * 0.18;
+        tone(freq, start, 0.18, 0.07, ctx.destination);
+        tone(freq, start, 0.18, 0.035, delay);
+      });
+    }
+
+    function playMenuMove() {
+      if (state.muted) return;
+      const ctx = getAudioCtx();
+      tone(523.25, ctx.currentTime, 0.06, 0.03);
+      tone(784.00, ctx.currentTime + 0.055, 0.06, 0.025);
+    }
+
+    function playStartSound() {
+      if (state.muted) return;
+      const ctx = getAudioCtx();
+      [392.00, 523.25, 659.25].forEach((freq, i) => tone(freq, ctx.currentTime + i * 0.08, 0.08, 0.045));
+    }
+
+    function playErrorBuzz() {
+      if (state.muted) return;
+      const ctx = getAudioCtx();
+      tone(110, ctx.currentTime, 0.12, 0.055);
+      tone(82.41, ctx.currentTime + 0.08, 0.15, 0.045);
+    }
+
+    function playHintSound() {
+      if (state.muted) return;
+      const ctx = getAudioCtx();
+      [880, 1174.66, 1567.98].forEach((freq, i) => tone(freq, ctx.currentTime + i * 0.055, 0.07, 0.035));
+    }
+
+    function playResetSound() {
+      if (state.muted) return;
+      const ctx = getAudioCtx();
+      [392, 329.63, 261.63].forEach((freq, i) => tone(freq, ctx.currentTime + i * 0.06, 0.08, 0.04));
+    }
+
+    function playLeaderboardSound() {
+      if (state.muted) return;
+      const ctx = getAudioCtx();
+      [659.25, 783.99, 987.77].forEach((freq, i) => tone(freq, ctx.currentTime + i * 0.07, 0.09, 0.04));
+    }
+
+    function ensureMusicGain() {
+      const ctx = getAudioCtx();
+      if (!state.music.gain) {
+        state.music.gain = ctx.createGain();
+        state.music.gain.gain.value = 0.018;
+        state.music.gain.connect(ctx.destination);
+      }
+      return state.music.gain;
+    }
+
+    function scheduleMusicNote(freq, start, duration) {
+      if (state.muted) return;
+      const ctx = getAudioCtx();
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = "square";
+      osc.frequency.setValueAtTime(freq, start);
+      gain.gain.setValueAtTime(0.0001, start);
+      gain.gain.linearRampToValueAtTime(0.55, start + 0.01);
+      gain.gain.exponentialRampToValueAtTime(0.0001, start + duration);
+      osc.connect(gain).connect(ensureMusicGain());
+      osc.start(start);
+      osc.stop(start + duration + 0.03);
+    }
+
+    function scheduleMusic() {
+      if (!state.music.playing || state.muted) return;
+      const ctx = getAudioCtx();
+      const melody = [261.63, 329.63, 392.00, 523.25, 392.00, 329.63, 293.66, 392.00, 349.23, 440.00, 523.25, 659.25, 523.25, 440.00, 392.00, 329.63];
+      const bass = [130.81, 130.81, 196.00, 196.00, 146.83, 146.83, 196.00, 196.00];
+      while (state.music.nextNoteTime < ctx.currentTime + 0.6) {
+        const beat = state.music.noteIndex;
+        scheduleMusicNote(melody[beat % melody.length], state.music.nextNoteTime, 0.16);
+        if (beat % 2 === 0) scheduleMusicNote(bass[Math.floor(beat / 2) % bass.length], state.music.nextNoteTime, 0.24);
+        state.music.nextNoteTime += 0.22;
+        state.music.noteIndex += 1;
+      }
+    }
+
+    function startBackgroundMusic() {
+      if (state.muted || state.music.playing) return;
+      const ctx = getAudioCtx();
+      state.music.playing = true;
+      state.music.nextNoteTime = ctx.currentTime + 0.05;
+      state.music.noteIndex = 0;
+      scheduleMusic();
+      state.music.timerId = setInterval(scheduleMusic, 120);
+    }
+
+    function stopBackgroundMusic() {
+      state.music.playing = false;
+      clearInterval(state.music.timerId);
+      state.music.timerId = null;
+    }
+
+    function playUiAction(callback) {
+      if (!state.muted) {
+        getAudioCtx();
+        if (!state.music.playing) startBackgroundMusic();
+        callback?.();
+      }
+    }
+
+    function toggleMute() {
+      state.muted = !state.muted;
+      if (state.muted) {
+        stopBackgroundMusic();
+      } else {
+        startBackgroundMusic();
+        playStartSound();
+      }
+      els.muteBtn.textContent = `Sound: ${state.muted ? "Off" : "On"}`;
+      els.muteBtn.setAttribute("aria-pressed", String(state.muted));
+    }
+
+    els.nameForm.addEventListener("submit", event => {
+      event.preventDefault();
+      const name = els.playerNameInput.value.trim().slice(0, 16);
+      if (!name) return;
+      state.playerName = name;
+      playUiAction(playStartSound);
+      updatePlayerChip();
+      renderDifficultyChoices();
+      showScreen("menuScreen");
+    });
+
+    els.checkBtn.addEventListener("click", () => { playUiAction(playMenuMove); checkPuzzle(); });
+    els.hintBtn.addEventListener("click", () => { playUiAction(playHintSound); useHint(); });
+    els.resetBtn.addEventListener("click", () => { playUiAction(playResetSound); resetPuzzle(); });
+    els.finishBtn.addEventListener("click", () => { playUiAction(playMenuMove); finishAndSavePuzzle(); });
+    els.revealBtn.addEventListener("click", () => { playUiAction(playResetSound); revealAndForfeitPuzzle(); });
+    els.newGameBtn.addEventListener("click", () => { playUiAction(playMenuMove); goToMainScreen(); });
+    els.mainScreenBtn.addEventListener("click", () => { playUiAction(playMenuMove); goToMainScreen(); });
+    els.playAgainBtn.addEventListener("click", () => { playUiAction(playStartSound); goToMainScreen(); });
+    els.viewLeaderFromResultsBtn.addEventListener("click", () => { playUiAction(playLeaderboardSound); state.previousScreen = "resultsScreen"; renderLeaderboard(); showScreen("leaderboardScreen"); });
+    els.leaderFilter.addEventListener("change", () => { playUiAction(playMenuMove); renderLeaderboard(); });
+    els.backFromLeaderBtn.addEventListener("click", () => { playUiAction(playMenuMove); showScreen(state.playerName ? state.previousScreen : "welcomeScreen"); });
+    els.leaderBtn.addEventListener("click", () => {
+      playUiAction(playLeaderboardSound);
+      const active = document.querySelector(".screen.active")?.id || "menuScreen";
+      state.previousScreen = active === "leaderboardScreen" ? "menuScreen" : active;
+      renderLeaderboard();
+      showScreen("leaderboardScreen");
+    });
+    els.menuBtn.addEventListener("click", () => {
+      playUiAction(playMenuMove);
+      if (!state.playerName) showScreen("welcomeScreen");
+      else goToMainScreen();
+    });
+    els.muteBtn.addEventListener("click", toggleMute);
+
+    updatePlayerChip();
+    renderDifficultyChoices();
+  </script>
+</body>
+</html>
